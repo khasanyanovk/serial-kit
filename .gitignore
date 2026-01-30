@@ -12,6 +12,7 @@ out/
 *.swo
 *~
 .DS_Store
+.cache/
 
 # Compiled files
 *.o

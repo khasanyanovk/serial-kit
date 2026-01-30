@@ -1,6 +1,8 @@
-
 file(GLOB RUNTIME_SOURCES "source/*.cpp")
 file(GLOB RUNTIME_HEADERS "include/*.hpp")
+
+list(LENGTH RUNTIME_SOURCES RUNTIME_SOURCES_COUNT)
+message(STATUS "  Runtime sources: ${RUNTIME_SOURCES_COUNT} files")
 
 add_library(serialkit_runtime STATIC ${RUNTIME_SOURCES} ${RUNTIME_HEADERS})
 
