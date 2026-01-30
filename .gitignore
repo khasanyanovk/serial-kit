@@ -1,0 +1,51 @@
+# .gitignore for SerialKit
+
+# Build directories
+build/
+cmake-build-*/
+out/
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Compiled files
+*.o
+*.obj
+*.a
+*.lib
+*.so
+*.dll
+*.dylib
+*.exe
+
+# CMake
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+install_manifest.txt
+compile_commands.json
+
+# Generated files
+generated/
+*.pb.h
+*.pb.cc
+
+# Test results
+Testing/
+*.gcov
+*.gcda
+*.gcno
+
+# Package managers
+vcpkg_installed/
+conan/
+
+# Temporary files
+*.tmp
+*.log
+*.bak
