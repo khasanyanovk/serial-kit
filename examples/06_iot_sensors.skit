@@ -1,0 +1,64 @@
+// Example 6: IoT Sensor Data
+// Demonstrates time-series data and sensor readings
+
+namespace examples.iot;
+
+enum SensorType {
+    TEMPERATURE = 0;
+    HUMIDITY = 1;
+    PRESSURE = 2;
+    LIGHT = 3;
+    MOTION = 4;
+    AIR_QUALITY = 5;
+}
+
+enum DeviceStatus {
+    OFFLINE = 0;
+    ONLINE = 1;
+    MAINTENANCE = 2;
+    ERROR = 3;
+}
+
+model Reading {
+    double value = 1;
+    uint64 timestamp = 2;            // Unix timestamp
+    optional string unit = 3;
+}
+
+model Sensor {
+    string sensor_id = 1;
+    SensorType type = 2;
+    interned string location = 3;            // "room1", "basement" - repeated
+    Reading current_reading = 4;
+    optional double min_threshold = 5;
+    optional double max_threshold = 6;
+}
+
+model Device {
+    string device_id = 1;
+    string name = 2;
+    DeviceStatus status = 3;
+    repeated Sensor sensors = 4;
+    uint64 last_seen = 5;            // Unix timestamp
+    float battery_level = 6;
+    optional string firmware_version = 7;
+    optional byte calibration_data = 8; // Binary calibration settings
+}
+
+model SensorDataBatch {
+    string device_id = 1;
+    packed repeated double readings = 2;     // Time-series data (30-70% smaller)
+    uint64 batch_timestamp = 3;
+    uint32 sequence_number = 4;              // Packet sequence for ordering
+    optional byte compressed_data = 5;       // Compressed batch
+}
+
+model Alert {
+    string alert_id = 1;
+    string device_id = 2;
+    string sensor_id = 3;
+    interned string severity = 4;            // "low", "medium", "high", "critical"
+    string message = 5;
+    int64 timestamp = 5;
+    bool acknowledged = 6;
+}

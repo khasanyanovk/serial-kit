@@ -1,0 +1,119 @@
+// Example 7: Optimization Showcase
+// Demonstrates all wire format optimizations in SerialKit
+
+namespace examples.optimization;
+
+enum LogLevel {
+    TRACE = 0;
+    DEBUG = 1;
+    INFO = 2;
+    WARN = 3;
+    ERROR = 4;
+    FATAL = 5;
+}
+
+// Standard vs Optimized comparison
+model StandardLogEntry {
+    string level = 1;              // "INFO", "ERROR" repeated -> wastes bytes
+    string module = 2;             // "auth", "db", "api" repeated -> wastes bytes
+    string message = 3;
+    uint64 timestamp = 4;
+    repeated bool flags = 5;       // [true, false, true...] -> 1 byte per bool
+    repeated uint32 metrics = 6;   // [100, 200, 300...] -> tag + varint per element
+}
+
+model OptimizedLogEntry {
+    interned string level = 1;           // ⭐ 60% smaller: deduplicated via string table
+    interned string module = 2;          // ⭐ 60% smaller: deduplicated via string table
+    string message = 3;                  // Unique messages - no optimization needed
+    uint64 timestamp = 4;
+    bitmap repeated bool flags = 5;      // ⭐ 87% smaller: bit-packed
+    packed repeated uint32 metrics = 6;  // ⭐ 30-70% smaller: no per-element tags
+}
+
+// Feature Flags System
+model FeatureFlags {
+    string user_id = 1;
+    bitmap repeated bool features = 2;   // 1000+ features in < 125 bytes
+    uint32 schema_version = 3;
+}
+
+// Time-Series Metrics
+model MetricsBatch {
+    string metric_name = 1;
+    packed repeated uint64 timestamps = 2;  // Compact timestamp array
+    packed repeated double values = 3;       // Compact values array
+    uint32 interval_ms = 4;
+}
+
+// Network Protocol with Compression
+model NetworkMessage {
+    uint32 message_id = 1;
+    interned string type = 2;                     // "ping", "pong", "data" repeated
+    byte payload = 3;
+    packed repeated uint32 routing_path = 4;      // Compact node IDs
+    optional uint32 checksum = 5;
+}
+
+// IoT Sensor Batch
+model SensorBatch {
+    string device_id = 1;
+    interned string location = 2;                 // "room1", "room2" deduplicated
+    packed repeated double temperature = 3;       // 100 readings compactly
+    packed repeated double humidity = 4;          // 100 readings compactly
+    packed repeated uint64 timestamps = 5;        // 100 timestamps compactly
+    uint32 sample_rate_hz = 6;
+}
+
+// Permissions System
+model UserPermissions {
+    string user_id = 1;
+    interned string role = 2;                     // "admin", "user", "guest" repeated
+    bitmap repeated bool permissions = 3;         // 500+ permissions in ~63 bytes
+    uint64 updated_at = 4;
+}
+
+// Game State with Optimizations
+model GameSnapshot {
+    uint32 game_id = 1;
+    uint64 timestamp = 2;
+    packed repeated uint32 player_ids = 3;        // Compact player list
+    packed repeated float positions_x = 4;        // Separate X coords
+    packed repeated float positions_y = 5;        // Separate Y coords
+    packed repeated float positions_z = 6;        // Separate Z coords
+    bitmap repeated bool alive_flags = 7;         // Player alive/dead state
+    optional byte compressed_full_state = 8;      // Fallback for complex data
+}
+
+// API Response with String Interning
+model ApiResponse {
+    uint32 status_code = 1;
+    interned string status = 2;                   // "success", "error" repeated
+    string message = 3;
+    repeated ApiRecord records = 4;
+}
+
+model ApiRecord {
+    uint32 id = 1;
+    interned string type = 2;                     // "user", "order", "product" repeated
+    interned string status = 3;                   // "active", "pending" repeated
+    string data = 4;                              // JSON or unique data
+}
+
+// Telemetry Data
+model TelemetryEvent {
+    interned string event_type = 1;               // "click", "view", "error" repeated
+    interned string source = 2;                   // "mobile", "web", "api" repeated
+    uint64 timestamp = 3;
+    packed repeated uint32 tags = 4;              // Numeric tag IDs
+    optional string payload = 5;
+}
+
+// Configuration with Flags
+model SystemConfig {
+    uint32 version = 1;
+    bitmap repeated bool feature_toggles = 2;     // 100s of feature flags
+    packed repeated uint32 rate_limits = 3;       // [100, 200, 500] requests/min
+    interned string environment = 4;              // "dev", "staging", "prod"
+    optional byte encrypted_secrets = 5;
+}

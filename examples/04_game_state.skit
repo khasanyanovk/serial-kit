@@ -1,0 +1,67 @@
+// Example 4: Game State Serialization
+// Example of game data structures for multiplayer games
+
+namespace examples.game;
+
+enum GameState {
+    WAITING = 0;
+    STARTING = 1;
+    IN_PROGRESS = 2;
+    PAUSED = 3;
+    FINISHED = 4;
+}
+
+enum PlayerAction {
+    MOVE = 0;
+    ATTACK = 1;
+    DEFEND = 2;
+    USE_ITEM = 3;
+    CHAT = 4;
+}
+
+model Vector3 {
+    float x = 1;
+    float y = 2;
+    float z = 3;
+}
+
+model Player {
+    uint32 player_id = 1;            // Unsigned for player IDs
+    string nickname = 2;
+    Vector3 position = 3;
+    float health = 4;
+    float mana = 5;
+    uint32 level = 6;                // Levels are always positive
+    repeated string inventory = 7;
+    optional uint32 team_id = 8;
+    optional byte custom_data = 9;   // Mod data, achievements, etc.
+    bitmap repeated bool perks = 10; // Unlocked perks/skills (87% smaller)
+}
+
+model GameObject {
+    uint32 object_id = 1;
+    string type = 2;
+    Vector3 position = 3;
+    Vector3 rotation = 4;
+    bool active = 5;
+    optional byte custom_data = 6;  // Binary state data
+    optional byte mesh_data = 7;    // Custom mesh or texture
+}
+
+model WorldState {
+    uint64 timestamp = 1;
+    GameState state = 2;
+    repeated Player players = 3;
+    repeated GameObject objects = 4;
+    uint32 tick = 5;                    // Game tick counter
+    optional byte compressed_data = 6;  // Compressed game state
+    packed repeated uint32 active_quest_ids = 7;  // Compact quest tracking
+}
+
+model PlayerInput {
+    uint32 player_id = 1;
+    PlayerAction action = 2;
+    Vector3 target_position = 3;
+    optional uint32 target_id = 4;
+    uint64 timestamp = 5;
+}

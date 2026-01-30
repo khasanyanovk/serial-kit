@@ -30,6 +30,10 @@ model User {
     optional string email = 3;
     repeated string tags = 4;
     Status status = 5;
+    
+    // Optimized fields
+    packed repeated uint32 login_timestamps = 6;  // Compact array
+    interned string role = 7;                     // String deduplication
 }
 ```
 
@@ -106,7 +110,7 @@ serial-kit/
 - `byte` (alias for int8)
 - `float`, `double`
 - `bool`
-- `string`, `bytes`
+- `string`, `byte` (binary data)
 
 ### Complex Types
 - `enum` - enumeration types
@@ -114,8 +118,14 @@ serial-kit/
 - `optional` - optional fields
 - `repeated` - arrays
 
+### Field Modifiers (Optimization)
+- `packed repeated` - compact arrays without per-element tags (30-70% smaller)
+- `interned string` - deduplicate repeated strings via string table (40-60% smaller)
+- `bitmap repeated bool` - bit-packed boolean arrays (87% smaller)
+
 ## Documentation
 
+- [Wire Format Specification](docs/WIRE_FORMAT.md) - Binary protocol details and optimizations
 - [DSL Reference](docs/dsl_reference.md) - Complete .skit syntax guide
 - [API Reference](docs/api_reference.md) - Generated C++ API
 - [Tutorial](docs/tutorial.md) - Step-by-step guide
@@ -123,17 +133,20 @@ serial-kit/
 ## Roadmap
 
 - [x] Project setup
+- [x] Wire format specification with optimizations
 - [ ] Varint encoding/decoding
 - [ ] Basic serialization runtime
+- [ ] Wire format implementation (PACKED_ARRAY, STRING_TABLE, BITMAP)
 - [ ] Lexer implementation
 - [ ] Parser and AST
-- [ ] Code generator
+- [ ] Code generator with optimization support
 - [ ] Support for all primitive types
 - [ ] Support for enums
 - [ ] Support for nested models
-- [ ] Support for repeated fields
+- [ ] Support for repeated fields (standard + packed)
+- [ ] Support for field modifiers (interned, bitmap)
 - [ ] CLI compiler tool
-- [ ] Benchmarks vs Protobuf
+- [ ] Benchmarks vs Protobuf (with optimization comparisons)
 - [ ] Complete documentation
 
 ## Contributing

@@ -1,0 +1,52 @@
+namespace examples.auth;
+
+enum UserRole {
+    GUEST = 0;
+    USER = 1;
+    MODERATOR = 2;
+    ADMIN = 3;
+}
+
+enum AuthProvider {
+    LOCAL = 0;
+    GOOGLE = 1;
+    GITHUB = 2;
+    FACEBOOK = 3;
+}
+
+model User {
+    string username = 1;
+    string email = 2;
+    uint64 user_id = 3;              // Unsigned for user IDs
+    UserRole role = 4;
+    bool email_verified = 5;
+    uint64 created_at = 6;           // Unix timestamp
+    optional string avatar_url = 7;
+    repeated string permissions = 8;
+    optional byte profile_data = 9; // Additional binary profile data
+}
+
+model LoginRequest {
+    string username = 1;
+    string password = 2;
+    optional bool remember_me = 3;
+    AuthProvider provider = 4;
+}
+
+model LoginResponse {
+    bool success = 1;
+    optional string token = 2;
+    optional User user = 3;
+    optional string error_message = 4;
+    uint64 expires_at = 5;           // Unix timestamp
+    optional byte session_data = 6; // Encrypted session data
+}
+
+model Session {
+    uint64 user_id = 2;
+    uint64 created_at = 3;
+    uint64 created_at = 3;
+    int64 expires_at = 4;
+    string ip_address = 5;
+    optional string user_agent = 6;
+}
