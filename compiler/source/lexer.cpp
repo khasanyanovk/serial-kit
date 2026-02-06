@@ -1,11 +1,13 @@
 #include "lexer.hpp"
 #include <cctype>
 #include <sstream>
+#include <string>
 #include <unordered_map>
+
 
 namespace serialkit {
 
-static const std::unordered_map<std::string, TokenType> keywords = {
+static const std::unordered_map<std::string_view, TokenType> keywords = {
     {"namespace", TokenType::NAMESPACE}, {"enum", TokenType::ENUM},
     {"model", TokenType::MODEL},         {"optional", TokenType::OPTIONAL},
     {"repeated", TokenType::REPEATED},   {"packed", TokenType::PACKED},
@@ -171,30 +173,30 @@ void Lexer::skip_block_comment() {
 
 Token Lexer::read_identifier_or_keyword() {
   SourceLocation start_loc = current_location();
-  std::string identifier;
+  size_t start = position_;
 
   while (!is_at_end() && is_identifier_continue(current_char())) {
-    identifier += current_char();
     advance();
   }
 
+  std::string_view identifier = source_.substr(start, position_ - start);
   TokenType type = keyword_or_identifier(identifier);
   return Token(type, identifier, start_loc);
 }
 
 Token Lexer::read_number() {
   SourceLocation start_loc = current_location();
-  std::string number;
+  size_t start = position_;
 
   while (!is_at_end() && is_digit(current_char())) {
-    number += current_char();
     advance();
   }
 
+  std::string_view number = source_.substr(start, position_ - start);
   return Token(TokenType::NUMBER, number, start_loc);
 }
 
-Token Lexer::make_token(TokenType type, const std::string &value) {
+Token Lexer::make_token(TokenType type, std::string_view value) {
   return Token(type, value, current_location());
 }
 
@@ -202,17 +204,19 @@ Token Lexer::make_token(TokenType type) {
   return Token(type, current_location());
 }
 
-bool Lexer::is_identifier_start(char c) const {
-  return std::isalpha(c) || c == '_';
+inline bool Lexer::is_identifier_start(char c) const {
+  return std::isalpha(static_cast<unsigned char>(c)) || c == '_';
 }
 
-bool Lexer::is_identifier_continue(char c) const {
-  return std::isalnum(c) || c == '_';
+inline bool Lexer::is_identifier_continue(char c) const {
+  return std::isalnum(static_cast<unsigned char>(c)) || c == '_';
 }
 
-bool Lexer::is_digit(char c) const { return std::isdigit(c); }
+inline bool Lexer::is_digit(char c) const {
+  return std::isdigit(static_cast<unsigned char>(c));
+}
 
-TokenType Lexer::keyword_or_identifier(const std::string &word) const {
+TokenType Lexer::keyword_or_identifier(std::string_view word) const {
   auto it = keywords.find(word);
   if (it != keywords.end()) {
     return it->second;

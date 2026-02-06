@@ -1,13 +1,14 @@
 #ifndef _LEXER_HPP_
 #define _LEXER_HPP_
 
+#include <cstdint>
 #include <optional>
 #include <string>
 #include <string_view>
 
 namespace serialkit {
 
-enum class TokenType {
+enum class TokenType : uint8_t {
   // Keywords
   NAMESPACE,
   ENUM,
@@ -60,11 +61,11 @@ struct SourceLocation {
 
 struct Token {
   TokenType type;
-  std::string value;
+  std::string_view value;
   SourceLocation location;
 
-  Token(TokenType t, std::string v, SourceLocation loc)
-      : type(t), value(std::move(v)), location(loc) {}
+  Token(TokenType t, std::string_view v, SourceLocation loc)
+      : type(t), value(v), location(loc) {}
 
   Token(TokenType t, SourceLocation loc) : type(t), value(), location(loc) {}
 };
@@ -100,13 +101,13 @@ private:
 
   Token read_identifier_or_keyword();
   Token read_number();
-  Token make_token(TokenType type, const std::string &value);
+  Token make_token(TokenType type, std::string_view value);
   Token make_token(TokenType type);
 
-  bool is_identifier_start(char c) const;
-  bool is_identifier_continue(char c) const;
-  bool is_digit(char c) const;
-  TokenType keyword_or_identifier(const std::string &word) const;
+  inline bool is_identifier_start(char c) const;
+  inline bool is_identifier_continue(char c) const;
+  inline bool is_digit(char c) const;
+  TokenType keyword_or_identifier(std::string_view word) const;
 };
 
 const char *token_type_to_string(TokenType type);
