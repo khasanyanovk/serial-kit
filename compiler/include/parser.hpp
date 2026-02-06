@@ -1,11 +1,11 @@
-#pragma once
+#ifndef _PARSER_HPP_
+#define _PARSER_HPP_
 
 #include "ast.hpp"
 #include "lexer.hpp"
 #include <memory>
 #include <stdexcept>
 #include <string>
-#include <vector>
 
 namespace serialkit {
 
@@ -47,3 +47,5 @@ private:
 };
 
 } // namespace serialkit
+
+#endif

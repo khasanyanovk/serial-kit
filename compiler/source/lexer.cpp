@@ -57,6 +57,12 @@ Token Lexer::next_token() {
   case '.':
     advance();
     return make_token(TokenType::DOT, ".");
+  case '-':
+    if (peek_char() && is_digit(peek_char())) {
+      return read_number();
+    }
+    advance();
+    return make_token(TokenType::INVALID, std::string(1, c));
   }
 
   if (is_identifier_start(c)) {
@@ -187,6 +193,10 @@ Token Lexer::read_identifier_or_keyword() {
 Token Lexer::read_number() {
   SourceLocation start_loc = current_location();
   size_t start = position_;
+
+  if (current_char() == '-') {
+    advance();
+  }
 
   while (!is_at_end() && is_digit(current_char())) {
     advance();
