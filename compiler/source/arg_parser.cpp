@@ -49,6 +49,11 @@ void ArgParser::add_flag(char short_name, const std::string &long_name,
 void ArgParser::parse(int argc, char *argv[]) {
   positional_args.clear();
 
+  for (auto &[key, opt] : long_options) {
+    opt->is_set = false;
+    opt->value = opt->default_value;
+  }
+
   int i = 1;
   while (i < argc) {
     std::string token = argv[i];

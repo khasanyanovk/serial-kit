@@ -12,7 +12,7 @@ void register_options(ArgParser &parser);
 std::string read_file(const std::string &path);
 void write_file(const std::string &path, const std::string &content);
 int compile_schema(const std::string &input_file, const std::string &output_dir,
-                   bool verbose);
+                   const std::string &filename, bool verbose);
 
 int main(int argc, char **argv) {
   ArgParser parser;
@@ -46,9 +46,10 @@ int main(int argc, char **argv) {
 
     std::string input_file = positional[0];
     std::string output_dir = parser.value_of("output");
+    std::string filename = parser.value_of("filename");
     bool verbose = parser.is_set("verbose");
 
-    return compile_schema(input_file, output_dir, verbose);
+    return compile_schema(input_file, output_dir, filename, verbose);
 
   } catch (const std::exception &e) {
     std::cerr << "Error: " << e.what() << "\n";
@@ -62,6 +63,9 @@ void register_options(ArgParser &parser) {
   parser.add_flag(0, "version", "Show version information");
   parser.add_option('o', "output", "Output directory for generated files", true,
                     ".");
+  parser.add_option('f', "filename",
+                    "Base filename for generated files (without extension)",
+                    true, "");
 }
 
 std::string read_file(const std::string &path) {
@@ -84,7 +88,7 @@ void write_file(const std::string &path, const std::string &content) {
 }
 
 int compile_schema(const std::string &input_file, const std::string &output_dir,
-                   bool verbose) {
+                   const std::string &filename, bool verbose) {
   if (verbose) {
     std::cout << "Reading input file: " << input_file << "\n";
   }
@@ -129,9 +133,15 @@ int compile_schema(const std::string &input_file, const std::string &output_dir,
   std::string header_content = codegen.generate_header();
   std::string source_content = codegen.generate_source();
 
-  std::string namespace_name = schema->namespace_name;
-  std::string header_file = output_dir + "/" + namespace_name + ".hpp";
-  std::string source_file = output_dir + "/" + namespace_name + ".cpp";
+  std::string base_name;
+  if (!filename.empty()) {
+    base_name = filename;
+  } else {
+    base_name = schema->namespace_name;
+  }
+
+  std::string header_file = output_dir + "/" + base_name + ".hpp";
+  std::string source_file = output_dir + "/" + base_name + ".cpp";
 
   std::error_code ec;
   if (!std::filesystem::exists(output_dir, ec)) {

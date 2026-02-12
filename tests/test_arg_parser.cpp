@@ -287,3 +287,38 @@ TEST_F(ArgParserTest, ShortFlagsWithOptionAttached) {
   EXPECT_TRUE(parser.is_set("output"));
   EXPECT_EQ(parser.value_of("output"), "file.cpp");
 }
+
+TEST_F(ArgParserTest, FilenameOptionShort) {
+  parser.add_option('f', "filename", "Filename", true, "");
+  char *argv[] = {(char *)"program", (char *)"-f", (char *)"myfile"};
+  parser.parse(3, argv);
+  EXPECT_TRUE(parser.is_set("filename"));
+  EXPECT_EQ(parser.value_of("filename"), "myfile");
+}
+
+TEST_F(ArgParserTest, FilenameOptionLong) {
+  parser.add_option('f', "filename", "Filename", true, "");
+  char *argv[] = {(char *)"program", (char *)"--filename=custom_name"};
+  parser.parse(2, argv);
+  EXPECT_TRUE(parser.is_set("filename"));
+  EXPECT_EQ(parser.value_of("filename"), "custom_name");
+}
+
+TEST_F(ArgParserTest, FilenameWithOutputOption) {
+  parser.add_option('o', "output", "Output directory", true, ".");
+  parser.add_option('f', "filename", "Filename", true, "");
+  char *argv[] = {(char *)"program", (char *)"-o", (char *)"gen", (char *)"-f", (char *)"myschema"};
+  parser.parse(5, argv);
+  EXPECT_TRUE(parser.is_set("output"));
+  EXPECT_TRUE(parser.is_set("filename"));
+  EXPECT_EQ(parser.value_of("output"), "gen");
+  EXPECT_EQ(parser.value_of("filename"), "myschema");
+}
+
+TEST_F(ArgParserTest, FilenameDefaultEmpty) {
+  parser.add_option('f', "filename", "Filename", true, "");
+  char *argv[] = {(char *)"program"};
+  parser.parse(1, argv);
+  EXPECT_FALSE(parser.is_set("filename"));
+  EXPECT_EQ(parser.value_of("filename"), "");
+}
