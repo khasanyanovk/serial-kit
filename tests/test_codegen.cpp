@@ -1,6 +1,7 @@
 #include "codegen.hpp"
 #include "lexer.hpp"
 #include "parser.hpp"
+#include <fstream>
 #include <gtest/gtest.h>
 
 using namespace serialkit;
@@ -400,4 +401,42 @@ TEST_F(CodeGenTest, GenerateOptionalNestedTypes) {
   std::string header = codegen.generate_header();
 
   EXPECT_NE(header.find("std::optional<Config> config"), std::string::npos);
+}
+
+TEST_F(CodeGenTest, test) {
+  std::string source = R"(
+    namespace test;
+
+    enum Enum {
+      one = 1;
+      two = 2;
+    }
+    
+    model First {
+      int32 id = 1;
+    }
+    
+    model Second {
+      string name = 1;
+    }
+    
+    model Third {
+      bool active = 1;
+    }
+  )";
+
+  auto schema = parse_schema(source);
+  ASSERT_NE(schema, nullptr);
+
+  CodeGenerator codegen(*schema);
+  std::string header = codegen.generate_header();
+
+  std::ofstream hpp("test.hpp");
+  hpp << header;
+  hpp.close();
+
+  std::ofstream cpp("test.cpp");
+  cpp << codegen.generate_source();
+  ;
+  cpp.close();
 }

@@ -1,5 +1,5 @@
-#ifndef _SERIALKIT_CODEGEN_HPP_
-#define _SERIALKIT_CODEGEN_HPP_
+#ifndef _CODEGEN_HPP_
+#define _CODEGEN_HPP_
 
 #include "ast.hpp"
 #include <sstream>
@@ -16,8 +16,8 @@ public:
 
 private:
   void generate_includes();
-  void generate_namespace_open();
-  void generate_namespace_close();
+  void generate_namespace_open(std::ostringstream &);
+  void generate_namespace_close(std::ostringstream &);
   void generate_enum_declaration(const EnumDecl &enum_decl);
   void generate_model_declaration(const ModelDecl &model);
   void generate_model_implementation(const ModelDecl &model);

@@ -1,7 +1,7 @@
 // Example 4: Game State Serialization
 // Example of game data structures for multiplayer games
 
-namespace examples.game;
+namespace examples_game;
 
 enum GameState {
     WAITING = 0;

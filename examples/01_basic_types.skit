@@ -1,7 +1,7 @@
 // Example 1: Basic Types
 // Demonstrates all primitive types and basic model structure
 
-namespace examples.basic;
+namespace examples_basic;
 
 enum Priority {
     LOW = 0;

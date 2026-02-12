@@ -1,7 +1,7 @@
 // Example 5: Configuration System
 // Demonstrates nested models and complex configurations
 
-namespace examples.config;
+namespace examples_config;
 
 enum LogLevel {
     TRACE = 0;

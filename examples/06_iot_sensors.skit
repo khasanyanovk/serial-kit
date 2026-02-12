@@ -1,7 +1,7 @@
 // Example 6: IoT Sensor Data
 // Demonstrates time-series data and sensor readings
 
-namespace examples.iot;
+namespace examples_iot;
 
 enum SensorType {
     TEMPERATURE = 0;

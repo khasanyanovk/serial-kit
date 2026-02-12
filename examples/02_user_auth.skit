@@ -1,4 +1,4 @@
-namespace examples.auth;
+namespace examples_auth;
 
 enum UserRole {
     GUEST = 0;
@@ -44,7 +44,6 @@ model LoginResponse {
 
 model Session {
     uint64 user_id = 2;
-    uint64 created_at = 3;
     uint64 created_at = 3;
     int64 expires_at = 4;
     string ip_address = 5;

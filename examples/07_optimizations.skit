@@ -1,7 +1,7 @@
 // Example 7: Optimization Showcase
 // Demonstrates all wire format optimizations in SerialKit
 
-namespace examples.optimization;
+namespace examples_optimization;
 
 enum LogLevel {
     TRACE = 0;

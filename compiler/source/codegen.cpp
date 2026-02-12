@@ -11,7 +11,7 @@ std::string CodeGenerator::generate_header() {
 
   header_ << "#pragma once\n\n";
   generate_includes();
-  generate_namespace_open();
+  generate_namespace_open(header_);
 
   for (const auto &decl : schema_.declarations) {
     if (auto *enum_decl = dynamic_cast<const EnumDecl *>(decl.get())) {
@@ -21,7 +21,7 @@ std::string CodeGenerator::generate_header() {
     }
   }
 
-  generate_namespace_close();
+  generate_namespace_close(header_);
   return header_.str();
 }
 
@@ -33,7 +33,7 @@ std::string CodeGenerator::generate_source() {
   source_ << "#include <cstring>\n";
   source_ << "#include <stdexcept>\n\n";
 
-  generate_namespace_open();
+  generate_namespace_open(source_);
 
   for (const auto &decl : schema_.declarations) {
     if (auto *model_decl = dynamic_cast<const ModelDecl *>(decl.get())) {
@@ -41,7 +41,7 @@ std::string CodeGenerator::generate_source() {
     }
   }
 
-  generate_namespace_close();
+  generate_namespace_close(source_);
   return source_.str();
 }
 
@@ -53,13 +53,11 @@ void CodeGenerator::generate_includes() {
   header_ << "#include <memory>\n\n";
 }
 
-void CodeGenerator::generate_namespace_open() {
-  auto &out = header_.tellp() == 0 ? source_ : header_;
+void CodeGenerator::generate_namespace_open(std::ostringstream &out) {
   out << "namespace " << schema_.namespace_name << " {\n\n";
 }
 
-void CodeGenerator::generate_namespace_close() {
-  auto &out = header_.tellp() == 0 ? source_ : header_;
+void CodeGenerator::generate_namespace_close(std::ostringstream &out) {
   out << "} // namespace " << schema_.namespace_name << "\n";
 }
 
@@ -319,19 +317,35 @@ void CodeGenerator::generate_field_serializer(const Field &field,
                   << "    buffer.push_back(static_cast<uint8_t>(val));\n";
         }
       } else {
-        source_ << indent << "    auto item_data = item.serialize();\n";
-        source_ << indent << "    uint64_t length = item_data.size();\n";
-        source_ << indent << "    while (length > 0x7F) {\n";
-        source_ << indent
-                << "      buffer.push_back(static_cast<uint8_t>((length & "
-                   "0x7F) | 0x80));\n";
-        source_ << indent << "      length >>= 7;\n";
-        source_ << indent << "    }\n";
-        source_ << indent
-                << "    buffer.push_back(static_cast<uint8_t>(length));\n";
-        source_ << indent
-                << "    buffer.insert(buffer.end(), item_data.begin(), "
-                   "item_data.end());\n";
+        // Check if this is an enum type
+        auto *user_type = dynamic_cast<const UserType *>(field.type.get());
+        if (user_type && schema_.find_enum(user_type->name)) {
+          // Serialize enum as integer
+          source_ << indent
+                  << "    uint64_t val = static_cast<uint64_t>(item);\n";
+          source_ << indent << "    while (val > 0x7F) {\n";
+          source_ << indent
+                  << "      buffer.push_back(static_cast<uint8_t>((val & 0x7F) "
+                     "| 0x80));\n";
+          source_ << indent << "      val >>= 7;\n";
+          source_ << indent << "    }\n";
+          source_ << indent
+                  << "    buffer.push_back(static_cast<uint8_t>(val));\n";
+        } else {
+          source_ << indent << "    auto item_data = item.serialize();\n";
+          source_ << indent << "    uint64_t length = item_data.size();\n";
+          source_ << indent << "    while (length > 0x7F) {\n";
+          source_ << indent
+                  << "      buffer.push_back(static_cast<uint8_t>((length & "
+                     "0x7F) | 0x80));\n";
+          source_ << indent << "      length >>= 7;\n";
+          source_ << indent << "    }\n";
+          source_ << indent
+                  << "    buffer.push_back(static_cast<uint8_t>(length));\n";
+          source_ << indent
+                  << "    buffer.insert(buffer.end(), item_data.begin(), "
+                     "item_data.end());\n";
+        }
       }
 
       source_ << indent << "  }\n";
@@ -378,20 +392,34 @@ void CodeGenerator::generate_field_serializer(const Field &field,
         source_ << indent << "  buffer.push_back(static_cast<uint8_t>(val));\n";
       }
     } else {
-      source_ << indent << "  auto field_data = " << field.name
-              << "->serialize();\n";
-      source_ << indent << "  uint64_t length = field_data.size();\n";
-      source_ << indent << "  while (length > 0x7F) {\n";
-      source_ << indent
-              << "    buffer.push_back(static_cast<uint8_t>((length & 0x7F) | "
-                 "0x80));\n";
-      source_ << indent << "    length >>= 7;\n";
-      source_ << indent << "  }\n";
-      source_ << indent
-              << "  buffer.push_back(static_cast<uint8_t>(length));\n";
-      source_ << indent
-              << "  buffer.insert(buffer.end(), field_data.begin(), "
-                 "field_data.end());\n";
+      auto *user_type = dynamic_cast<const UserType *>(field.type.get());
+      if (user_type && schema_.find_enum(user_type->name)) {
+        source_ << indent << "  uint64_t val = static_cast<uint64_t>(*"
+                << field.name << ");\n";
+        source_ << indent << "  while (val > 0x7F) {\n";
+        source_ << indent
+                << "    buffer.push_back(static_cast<uint8_t>((val & 0x7F) | "
+                   "0x80));\n";
+        source_ << indent << "    val >>= 7;\n";
+        source_ << indent << "  }\n";
+        source_ << indent << "  buffer.push_back(static_cast<uint8_t>(val));\n";
+      } else {
+        source_ << indent << "  auto field_data = " << field.name
+                << "->serialize();\n";
+        source_ << indent << "  uint64_t length = field_data.size();\n";
+        source_ << indent << "  while (length > 0x7F) {\n";
+        source_
+            << indent
+            << "    buffer.push_back(static_cast<uint8_t>((length & 0x7F) | "
+               "0x80));\n";
+        source_ << indent << "    length >>= 7;\n";
+        source_ << indent << "  }\n";
+        source_ << indent
+                << "  buffer.push_back(static_cast<uint8_t>(length));\n";
+        source_ << indent
+                << "  buffer.insert(buffer.end(), field_data.begin(), "
+                   "field_data.end());\n";
+      }
     }
 
     source_ << indent << "}\n\n";
@@ -438,20 +466,36 @@ void CodeGenerator::generate_field_serializer(const Field &field,
         source_ << indent << "  buffer.push_back(static_cast<uint8_t>(val));\n";
       }
     } else {
-      source_ << indent << "  auto field_data = " << field.name
-              << ".serialize();\n";
-      source_ << indent << "  uint64_t length = field_data.size();\n";
-      source_ << indent << "  while (length > 0x7F) {\n";
-      source_ << indent
-              << "    buffer.push_back(static_cast<uint8_t>((length & 0x7F) | "
-                 "0x80));\n";
-      source_ << indent << "    length >>= 7;\n";
-      source_ << indent << "  }\n";
-      source_ << indent
-              << "  buffer.push_back(static_cast<uint8_t>(length));\n";
-      source_ << indent
-              << "  buffer.insert(buffer.end(), field_data.begin(), "
-                 "field_data.end());\n";
+      // Check if this is an enum type
+      auto *user_type = dynamic_cast<const UserType *>(field.type.get());
+      if (user_type && schema_.find_enum(user_type->name)) {
+        // Serialize enum as integer
+        source_ << indent << "  uint64_t val = static_cast<uint64_t>("
+                << field.name << ");\n";
+        source_ << indent << "  while (val > 0x7F) {\n";
+        source_ << indent
+                << "    buffer.push_back(static_cast<uint8_t>((val & 0x7F) | "
+                   "0x80));\n";
+        source_ << indent << "    val >>= 7;\n";
+        source_ << indent << "  }\n";
+        source_ << indent << "  buffer.push_back(static_cast<uint8_t>(val));\n";
+      } else {
+        source_ << indent << "  auto field_data = " << field.name
+                << ".serialize();\n";
+        source_ << indent << "  uint64_t length = field_data.size();\n";
+        source_ << indent << "  while (length > 0x7F) {\n";
+        source_
+            << indent
+            << "    buffer.push_back(static_cast<uint8_t>((length & 0x7F) | "
+               "0x80));\n";
+        source_ << indent << "    length >>= 7;\n";
+        source_ << indent << "  }\n";
+        source_ << indent
+                << "  buffer.push_back(static_cast<uint8_t>(length));\n";
+        source_ << indent
+                << "  buffer.insert(buffer.end(), field_data.begin(), "
+                   "field_data.end());\n";
+      }
     }
 
     source_ << indent << "}\n\n";
@@ -517,44 +561,71 @@ void CodeGenerator::generate_field_deserializer(const Field &field,
       }
     }
   } else {
-    source_ << indent << "  uint64_t length = 0;\n";
-    source_ << indent << "  int shift = 0;\n";
-    source_ << indent << "  while (pos < data.size()) {\n";
-    source_ << indent << "    uint8_t byte = data[pos++];\n";
-    source_ << indent
-            << "    length |= static_cast<uint64_t>(byte & 0x7F) << shift;\n";
-    source_ << indent << "    if ((byte & 0x80) == 0) break;\n";
-    source_ << indent << "    shift += 7;\n";
-    source_ << indent << "  }\n";
-
     std::string type_name = field.type->get_name();
 
-    if (field.is_repeated()) {
-      source_ << indent << "  " << type_name << " item;\n";
+    // Check if this is an enum type
+    auto *user_type = dynamic_cast<const UserType *>(field.type.get());
+    if (user_type && schema_.find_enum(user_type->name)) {
+      // Deserialize enum as integer
+      source_ << indent << "  uint64_t value = 0;\n";
+      source_ << indent << "  int shift = 0;\n";
+      source_ << indent << "  while (pos < data.size()) {\n";
+      source_ << indent << "    uint8_t byte = data[pos++];\n";
       source_ << indent
-              << "  std::vector<uint8_t> item_data(data.begin() + pos, "
-                 "data.begin() + pos + length);\n";
-      source_ << indent
-              << "  if (!item.deserialize(item_data)) return false;\n";
-      source_ << indent << "  " << field.name
-              << ".push_back(std::move(item));\n";
-    } else if (field.is_optional()) {
-      source_ << indent << "  " << type_name << " value;\n";
-      source_ << indent
-              << "  std::vector<uint8_t> item_data(data.begin() + pos, "
-                 "data.begin() + pos + length);\n";
-      source_ << indent
-              << "  if (!value.deserialize(item_data)) return false;\n";
-      source_ << indent << "  " << field.name << " = std::move(value);\n";
-    } else {
-      source_ << indent
-              << "  std::vector<uint8_t> item_data(data.begin() + pos, "
-                 "data.begin() + pos + length);\n";
-      source_ << indent << "  if (!" << field.name
-              << ".deserialize(item_data)) return false;\n";
-    }
+              << "    value |= static_cast<uint64_t>(byte & 0x7F) << shift;\n";
+      source_ << indent << "    if ((byte & 0x80) == 0) break;\n";
+      source_ << indent << "    shift += 7;\n";
+      source_ << indent << "  }\n";
 
-    source_ << indent << "  pos += length;\n";
+      if (field.is_repeated()) {
+        source_ << indent << "  " << field.name << ".push_back(static_cast<"
+                << type_name << ">(value));\n";
+      } else if (field.is_optional()) {
+        source_ << indent << "  " << field.name << " = static_cast<"
+                << type_name << ">(value);\n";
+      } else {
+        source_ << indent << "  " << field.name << " = static_cast<"
+                << type_name << ">(value);\n";
+      }
+    } else {
+      // Deserialize as model (complex type)
+      source_ << indent << "  uint64_t length = 0;\n";
+      source_ << indent << "  int shift = 0;\n";
+      source_ << indent << "  while (pos < data.size()) {\n";
+      source_ << indent << "    uint8_t byte = data[pos++];\n";
+      source_ << indent
+              << "    length |= static_cast<uint64_t>(byte & 0x7F) << shift;\n";
+      source_ << indent << "    if ((byte & 0x80) == 0) break;\n";
+      source_ << indent << "    shift += 7;\n";
+      source_ << indent << "  }\n";
+
+      if (field.is_repeated()) {
+        source_ << indent << "  " << type_name << " item;\n";
+        source_ << indent
+                << "  std::vector<uint8_t> item_data(data.begin() + pos, "
+                   "data.begin() + pos + length);\n";
+        source_ << indent
+                << "  if (!item.deserialize(item_data)) return false;\n";
+        source_ << indent << "  " << field.name
+                << ".push_back(std::move(item));\n";
+      } else if (field.is_optional()) {
+        source_ << indent << "  " << type_name << " value;\n";
+        source_ << indent
+                << "  std::vector<uint8_t> item_data(data.begin() + pos, "
+                   "data.begin() + pos + length);\n";
+        source_ << indent
+                << "  if (!value.deserialize(item_data)) return false;\n";
+        source_ << indent << "  " << field.name << " = std::move(value);\n";
+      } else {
+        source_ << indent
+                << "  std::vector<uint8_t> item_data(data.begin() + pos, "
+                   "data.begin() + pos + length);\n";
+        source_ << indent << "  if (!" << field.name
+                << ".deserialize(item_data)) return false;\n";
+      }
+
+      source_ << indent << "  pos += length;\n";
+    }
   }
 
   source_ << indent << "  break;\n";
