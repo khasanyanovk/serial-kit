@@ -1,0 +1,53 @@
+// Example 3: Network Protocol Messages
+// Demonstrates message types for client-server communication
+
+namespace examples_network;
+
+enum MessageType {
+    PING = 0;
+    PONG = 1;
+    CONNECT = 2;
+    DISCONNECT = 3;
+    DATA = 4;
+    ERROR = 5;
+}
+
+enum ErrorCode {
+    NONE = 0;
+    INVALID_REQUEST = 1;
+    UNAUTHORIZED = 2;
+    NOT_FOUND = 3;
+    TIMEOUT = 4;
+    INTERNAL_ERROR = 5;
+}
+
+model Header {
+    uint32 message_id = 1;           // Unsigned for message IDs
+    MessageType type = 2;
+    uint64 timestamp = 3;            // Unix timestamp
+    optional string correlation_id = 4;
+    uint32 payload_size = 5;         // Size in bytes
+    packed repeated uint32 metadata_flags = 6;  // Optimized flags array
+}
+
+model Packet {
+    Header header = 1;
+    byte payload = 2;               // Binary payload data
+    optional uint32 checksum = 3;    // CRC32 or similar
+    optional byte signature = 4;    // Cryptographic signature
+}
+
+model ErrorMessage {
+    ErrorCode code = 1;
+    interned string message = 2;             // Deduplicated error messages
+    uint64 timestamp = 3;
+    optional byte debug_data = 4;            // Binary debug information
+    interned string category = 5;            // "auth", "network", "validation"
+}
+
+model ConnectionInfo {
+    string client_id = 1;
+    string protocol_version = 2;
+    int32 keepalive_interval = 3;
+    repeated string supported_features = 4;
+}

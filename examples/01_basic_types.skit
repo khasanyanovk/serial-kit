@@ -1,0 +1,28 @@
+// Example 1: Basic Types
+// Demonstrates all primitive types and basic model structure
+
+namespace examples_basic;
+
+enum Priority {
+    LOW = 0;
+    MEDIUM = 1;
+    HIGH = 2;
+    CRITICAL = 3;
+}
+
+model Task {
+    string title = 1;
+    string description = 2;
+    uint32 id = 3;                    // Unsigned for IDs
+    bool completed = 4;
+    Priority priority = 5;
+    uint64 created_at = 6;            // Unix timestamp (unsigned)
+    optional uint64 completed_at = 7;
+    optional byte attachment = 8;    // Binary data (files, images, etc.)
+}
+
+model TaskList {
+    string name = 1;
+    repeated Task tasks = 2;
+    int32 total_count = 3;
+}
