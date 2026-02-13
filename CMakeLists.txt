@@ -29,9 +29,6 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 
 find_package(Threads REQUIRED)
 
-message(STATUS "[SerialKit] Building runtime library")
-add_subdirectory(runtime)
-
 if(SERIALKIT_BUILD_COMPILER)
     message(STATUS "[SerialKit] Building compiler")
     add_subdirectory(compiler)

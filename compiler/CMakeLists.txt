@@ -12,8 +12,6 @@ target_include_directories(serialkit_compiler_lib PUBLIC
     $<INSTALL_INTERFACE:include>
 )
 
-target_link_libraries(serialkit_compiler_lib PUBLIC SerialKit::Runtime)
-
 add_executable(serialkit_compiler main.cpp)
 target_link_libraries(serialkit_compiler PRIVATE serialkit_compiler_lib)
 set_target_properties(serialkit_compiler PROPERTIES OUTPUT_NAME "serialkit-compiler")

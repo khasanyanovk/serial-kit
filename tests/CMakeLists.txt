@@ -14,7 +14,6 @@ message(STATUS "  Test sources: ${TEST_SOURCES_COUNT} files")
 
 add_executable(serialkit_tests ${TEST_SOURCES})
 target_link_libraries(serialkit_tests PRIVATE 
-    SerialKit::Runtime 
     serialkit_compiler_lib 
     GTest::gtest_main
 )
