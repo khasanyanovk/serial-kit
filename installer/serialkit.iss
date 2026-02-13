@@ -45,9 +45,21 @@ Name: "russian"; MessagesFile: "compiler:Languages\Russian.isl"
 [Tasks]
 Name: "addtopath"; Description: "Add SerialKit to system PATH (allows running 'serialkit-compiler' from any directory)"; GroupDescription: "Environment:"; Flags: checkedonce
 
+#define MainExeSource1 "..\build\bin\serialkit-compiler.exe"
+#define MainExeSource2 "..\build\bin\Release\serialkit-compiler.exe"
+
+#if FileExists(MainExeSource1)
+    #define MainExeSource MainExeSource1
+#else
+    #if FileExists(MainExeSource2)
+        #define MainExeSource MainExeSource2
+    #else
+        #error "Could not find serialkit-compiler.exe. Looked in ..\build\bin and bin\Release"
+    #endif
+#endif
+
 [Files]
-; Main executable
-Source: "..\build\bin\serialkit-compiler.exe"; DestDir: "{app}\bin"; Flags: ignoreversion
+Source: "{#MainExeSource}"; DestDir: "{app}\bin"; Flags: ignoreversion
 
 ; Documentation
 Source: "..\README.md"; DestDir: "{app}"; Flags: ignoreversion
