@@ -101,6 +101,11 @@ cmake -DSERIALKIT_BUILD_COMPILER=OFF .. # Disable compiler
 cmake -DCMAKE_BUILD_TYPE=Release ..     # Release build
 ```
 
+## Get from installer
+Download installer  
+https://github.com/khasanyanovk/serial-kit/actions/runs/22002116375/artifacts/5505631736  
+Or download actual version from actions artifacts
+
 ## Project Structure
 
 ```
