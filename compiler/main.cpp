@@ -8,6 +8,8 @@
 #include <iostream>
 #include <sstream>
 
+#define VERSION 1.0
+
 void register_options(ArgParser &parser);
 std::string read_file(const std::string &path);
 void write_file(const std::string &path, const std::string &content);
@@ -33,7 +35,7 @@ int main(int argc, char **argv) {
     }
 
     if (parser.is_set("version")) {
-      std::cout << "SerialKit Compiler version 1.0.0\n";
+      std::cout << "SerialKit Compiler version " << VERSION << '\n';
       return 0;
     }
 
