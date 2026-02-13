@@ -46,7 +46,7 @@ Name: "russian"; MessagesFile: "compiler:Languages\Russian.isl"
 Name: "addtopath"; Description: "Add SerialKit to system PATH (allows running 'serialkit-compiler' from any directory)"; GroupDescription: "Environment:"; Flags: checkedonce
 
 #define MainExeSource1 "..\build\bin\serialkit-compiler.exe"
-#define MainExeSource2 "bin\Release\serialkit-compiler.exe"
+#define MainExeSource2 "..\build\bin\Release\serialkit-compiler.exe"
 
 #if FileExists(MainExeSource1)
     #define MainExeSource MainExeSource1
