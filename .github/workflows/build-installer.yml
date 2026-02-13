@@ -1,0 +1,73 @@
+name: Build Windows Installer
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build-installer:
+    name: Build Windows Installer
+    runs-on: windows-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup CMake
+      uses: lukka/get-cmake@latest
+
+    - name: Install Inno Setup
+      run: |
+        choco install innosetup -y
+        
+    - name: Configure CMake
+      run: cmake -B build -DCMAKE_BUILD_TYPE=Release
+
+    - name: Build
+      run: cmake --build build --config Release --parallel
+
+    - name: Run tests
+      working-directory: build
+      run: ctest -C Release --output-on-failure
+
+    - name: Compile Inno Setup Installer
+      run: |
+        & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" installer\serialkit.iss
+      shell: pwsh
+
+    - name: Get version
+      id: version
+      run: |
+        $version = (Select-String -Path "CMakeLists.txt" -Pattern "VERSION (\d+\.\d+\.\d+)").Matches.Groups[1].Value
+        echo "version=$version" >> $env:GITHUB_OUTPUT
+      shell: pwsh
+
+    - name: Upload Installer Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: SerialKit-Windows-Installer
+        path: installer/output/SerialKit-*.exe
+        retention-days: 90
+
+    - name: Upload Portable Build
+      uses: actions/upload-artifact@v4
+      with:
+        name: SerialKit-Windows-Portable
+        path: |
+          build/bin/serialkit_compiler.exe
+          README.md
+          LICENSE
+          examples/
+        retention-days: 90
+
+    - name: Create Release on Tag
+      if: startsWith(github.ref, 'refs/tags/v')
+      uses: softprops/action-gh-release@v1
+      with:
+        files: |
+          installer/output/SerialKit-*.exe
+          build/bin/serialkit_compiler.exe
+        generate_release_notes: true
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

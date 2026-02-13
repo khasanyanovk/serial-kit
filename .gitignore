@@ -50,3 +50,9 @@ conan/
 *.tmp
 *.log
 *.bak
+
+# Installer outputs
+installer/output/
+installer/*.exe
+installer/*.msi
+*.nsi

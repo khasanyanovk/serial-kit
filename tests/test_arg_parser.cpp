@@ -307,7 +307,8 @@ TEST_F(ArgParserTest, FilenameOptionLong) {
 TEST_F(ArgParserTest, FilenameWithOutputOption) {
   parser.add_option('o', "output", "Output directory", true, ".");
   parser.add_option('f', "filename", "Filename", true, "");
-  char *argv[] = {(char *)"program", (char *)"-o", (char *)"gen", (char *)"-f", (char *)"myschema"};
+  char *argv[] = {(char *)"program", (char *)"-o", (char *)"gen", (char *)"-f",
+                  (char *)"myschema"};
   parser.parse(5, argv);
   EXPECT_TRUE(parser.is_set("output"));
   EXPECT_TRUE(parser.is_set("filename"));
@@ -321,4 +322,43 @@ TEST_F(ArgParserTest, FilenameDefaultEmpty) {
   parser.parse(1, argv);
   EXPECT_FALSE(parser.is_set("filename"));
   EXPECT_EQ(parser.value_of("filename"), "");
+}
+
+TEST_F(ArgParserTest, PathWithSpaces) {
+  parser.add_option('o', "output", "Output directory", true, ".");
+  char *argv[] = {(char *)"program", (char *)"-o",
+                  (char *)"E:/folder name/output"};
+  parser.parse(3, argv);
+  EXPECT_TRUE(parser.is_set("output"));
+  EXPECT_EQ(parser.value_of("output"), "E:/folder name/output");
+}
+
+TEST_F(ArgParserTest, FilenameWithSpaces) {
+  parser.add_option('f', "filename", "Filename", true, "");
+  char *argv[] = {(char *)"program", (char *)"--filename",
+                  (char *)"my file name"};
+  parser.parse(3, argv);
+  EXPECT_TRUE(parser.is_set("filename"));
+  EXPECT_EQ(parser.value_of("filename"), "my file name");
+}
+
+TEST_F(ArgParserTest, MultiplePathsWithSpaces) {
+  parser.add_option('o', "output", "Output directory", true, ".");
+  parser.add_option('f', "filename", "Filename", true, "");
+  char *argv[] = {(char *)"program", (char *)"-o",
+                  (char *)"C:/Program Files/output", (char *)"--filename",
+                  (char *)"my schema file"};
+  parser.parse(5, argv);
+  EXPECT_TRUE(parser.is_set("output"));
+  EXPECT_TRUE(parser.is_set("filename"));
+  EXPECT_EQ(parser.value_of("output"), "C:/Program Files/output");
+  EXPECT_EQ(parser.value_of("filename"), "my schema file");
+}
+
+TEST_F(ArgParserTest, PositionalArgumentWithSpaces) {
+  char *argv[] = {(char *)"program",
+                  (char *)"E:/My Documents/schema file.skit"};
+  parser.parse(2, argv);
+  EXPECT_EQ(parser.positional().size(), 1);
+  EXPECT_EQ(parser.positional()[0], "E:/My Documents/schema file.skit");
 }
