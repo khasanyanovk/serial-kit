@@ -31,6 +31,20 @@ jobs:
       working-directory: build
       run: ctest -C Release --output-on-failure
 
+    - name: Verify build output
+      run: |
+        Write-Host "Checking build output..."
+        if (Test-Path "build\bin\serialkit-compiler.exe") {
+          Write-Host "✓ serialkit-compiler.exe found"
+          Get-Item "build\bin\serialkit-compiler.exe" | Format-List Name, Length, LastWriteTime
+        } else {
+          Write-Error "✗ serialkit-compiler.exe not found!"
+          Write-Host "Contents of build/bin:"
+          Get-ChildItem "build\bin" -Recurse
+          exit 1
+        }
+      shell: pwsh
+
     - name: Compile Inno Setup Installer
       run: |
         & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" installer\serialkit.iss
@@ -55,7 +69,7 @@ jobs:
       with:
         name: SerialKit-Windows-Portable
         path: |
-          build/bin/serialkit_compiler.exe
+          build/bin/serialkit-compiler.exe
           README.md
           LICENSE
           examples/
@@ -67,7 +81,7 @@ jobs:
       with:
         files: |
           installer/output/SerialKit-*.exe
-          build/bin/serialkit_compiler.exe
+          build/bin/serialkit-compiler.exe
         generate_release_notes: true
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
