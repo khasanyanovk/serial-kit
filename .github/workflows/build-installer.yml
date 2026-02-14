@@ -34,9 +34,9 @@ jobs:
     - name: Verify build output
       run: |
         Write-Host "Checking build output..."
-        if (Test-Path "build\bin\serialkit-compiler.exe") {
+        if (Test-Path "build\bin\Release\serialkit-compiler.exe") {
           Write-Host "✓ serialkit-compiler.exe found"
-          Get-Item "build\bin\serialkit-compiler.exe" | Format-List Name, Length, LastWriteTime
+          Get-Item "build\bin\Release\serialkit-compiler.exe" | Format-List Name, Length, LastWriteTime
         } else {
           Write-Error "✗ serialkit-compiler.exe not found!"
           Write-Host "Contents of build/bin:"
