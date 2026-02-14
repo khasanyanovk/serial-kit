@@ -102,8 +102,8 @@ cmake -DCMAKE_BUILD_TYPE=Release ..     # Release build
 ```
 
 ## Get from installer
-Download installer  
-https://github.com/khasanyanovk/serial-kit/actions/runs/22002116375/artifacts/5505631736  
+Download installer 
+[v1.0.0](https://github.com/khasanyanovk/serial-kit/actions/runs/22013854619/artifacts/5509906148)  
 Or download actual version from actions artifacts
 
 ## Project Structure
