@@ -25,11 +25,12 @@ std::string CodeGenerator::generate_header() {
   return header_.str();
 }
 
-std::string CodeGenerator::generate_source() {
+std::string CodeGenerator::generate_source(const std::string &header) {
   source_.str("");
   source_.clear();
 
-  source_ << "#include \"" << schema_.namespace_name << ".hpp\"\n";
+  source_ << "#include \"" << (header.empty() ? schema_.namespace_name : header)
+          << ".hpp\"\n";
   source_ << "#include <cstring>\n";
   source_ << "#include <stdexcept>\n\n";
 
