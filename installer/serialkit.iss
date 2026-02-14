@@ -7,7 +7,7 @@
 ; 3. Build -> Compile
 
 #define MyAppName "SerialKit"
-#define MyAppVersion "0.1.0"
+#define MyAppVersion "1.0.0"
 #define MyAppPublisher "Kirill Khasanyanov"
 #define MyAppURL "https://github.com/khasanyanovk/serial-kit"
 #define MyAppExeName "serialkit-compiler.exe"

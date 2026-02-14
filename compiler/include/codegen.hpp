@@ -12,7 +12,7 @@ public:
   explicit CodeGenerator(const Schema &schema);
 
   std::string generate_header();
-  std::string generate_source();
+  std::string generate_source(const std::string & = "");
 
 private:
   void generate_includes();

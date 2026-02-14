@@ -132,15 +132,14 @@ int compile_schema(const std::string &input_file, const std::string &output_dir,
   }
   serialkit::CodeGenerator codegen(*schema);
 
-  std::string header_content = codegen.generate_header();
-  std::string source_content = codegen.generate_source();
-
   std::string base_name;
   if (!filename.empty()) {
     base_name = filename;
   } else {
     base_name = schema->namespace_name;
   }
+  std::string header_content = codegen.generate_header();
+  std::string source_content = codegen.generate_source(base_name);
 
   std::string header_file = output_dir + "/" + base_name + ".hpp";
   std::string source_file = output_dir + "/" + base_name + ".cpp";
